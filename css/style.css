@@ -1,0 +1,446 @@
+:root {
+    --primary-color: #db1779;
+    --primary-light: #f8e1ed;
+    --text-color: #333;
+    --background-color: #f5f5f5;
+    --card-background: #ffffff;
+    --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+h1 {
+    color: var(--primary-color);
+    font-size: 2.5rem;
+}
+
+.admin-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border: 2px solid var(--primary-color);
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.admin-link:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.tests-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.test-card {
+    background: var(--card-background);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease;
+}
+
+.test-card:hover {
+    transform: translateY(-5px);
+}
+
+.test-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.test-content {
+    padding: 1.5rem;
+}
+
+.test-title {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+}
+
+.test-label {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+.test-label.free {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.test-label.paid {
+    background-color: #fff3e0;
+    color: #f57c00;
+}
+
+.start-test-btn {
+    display: block;
+    width: 100%;
+    padding: 0.75rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.start-test-btn:hover {
+    background-color: #b3145f;
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="url"],
+textarea,
+select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+button {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #b3145f;
+}
+
+/* Admin Dashboard Styles */
+.admin-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.edit-btn,
+.delete-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.edit-btn {
+    background-color: #2196f3;
+}
+
+.delete-btn {
+    background-color: #f44336;
+}
+
+/* Question Styles */
+.question-container {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow);
+}
+
+.options-list {
+    list-style: none;
+    margin-top: 1rem;
+}
+
+.option-item {
+    margin-bottom: 0.5rem;
+}
+
+.option-label {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.option-label:hover {
+    background-color: var(--primary-light);
+}
+
+.option-input {
+    margin-left: 0.5rem;
+}
+
+/* Results Page Styles */
+.result-container {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    text-align: center;
+}
+
+.result-message {
+    font-size: 1.25rem;
+    margin: 1.5rem 0;
+    color: var(--primary-color);
+}
+
+.back-btn {
+    display: inline-block;
+    margin-top: 1rem;
+    text-decoration: none;
+}
+
+/* --- Dashboard Layout --- */
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    background: #f8f9fb;
+}
+
+.sidebar {
+    width: 220px;
+    background: #fff;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.04);
+    padding: 2rem 1rem;
+    border-radius: 0 20px 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+.sidebar h2 {
+    font-size: 1.3rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-weight: bold;
+}
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+.sidebar li {
+    margin-bottom: 1rem;
+}
+.sidebar a {
+    color: #333;
+    text-decoration: none;
+    font-size: 1.1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    display: block;
+    transition: background 0.2s;
+}
+.sidebar a.active, .sidebar a:hover {
+    background: var(--primary-light);
+    color: var(--primary-color);
+}
+
+.dashboard-main {
+    flex: 1;
+    padding: 2.5rem 3rem;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+}
+.add-quiz-btn {
+    background: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+.add-quiz-btn:hover {
+    background: #b3145f;
+}
+
+.dashboard-cards {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+}
+.dashboard-card {
+    flex: 1;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 2px 8px rgba(219,23,121,0.07);
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 1.5rem 2rem;
+    min-width: 0;
+}
+.dashboard-card .card-icon {
+    font-size: 2.2rem;
+    background: var(--primary-light);
+    color: var(--primary-color);
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.dashboard-card.total {
+    border-top: 4px solid #a084e8;
+}
+.dashboard-card.free {
+    border-top: 4px solid #1ccfc9;
+}
+.dashboard-card.paid {
+    border-top: 4px solid #db1779;
+}
+.card-title {
+    font-size: 1rem;
+    color: #888;
+    margin-bottom: 0.2rem;
+}
+.card-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+/* --- Table --- */
+.dashboard-table-section {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 2px 8px rgba(219,23,121,0.07);
+    padding: 2rem;
+    margin-bottom: 2.5rem;
+}
+.dashboard-table-section h2 {
+    margin-bottom: 1.5rem;
+    font-size: 1.2rem;
+    color: #333;
+}
+.dashboard-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    font-size: 1.05rem;
+}
+.dashboard-table th, .dashboard-table td {
+    padding: 1rem 0.7rem;
+    text-align: center;
+}
+.dashboard-table th {
+    background: #f3f3f7;
+    color: #888;
+    font-weight: 600;
+}
+.dashboard-table tr {
+    border-bottom: 1px solid #f0f0f0;
+}
+.dashboard-table tr:last-child {
+    border-bottom: none;
+}
+.dashboard-table td {
+    color: #333;
+}
+.icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    margin: 0 0.2rem;
+    transition: color 0.2s;
+}
+.icon-btn:hover {
+    color: #db1779;
+}
+
+/* --- Charts --- */
+.dashboard-charts {
+    display: flex;
+    gap: 2.5rem;
+    margin-top: 2.5rem;
+}
+.chart-box {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 2px 8px rgba(219,23,121,0.07);
+    padding: 1.5rem 2rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.chart-box h3 {
+    font-size: 1.1rem;
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+/* --- Responsive --- */
+@media (max-width: 900px) {
+    .dashboard-cards, .dashboard-charts {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    .dashboard-main {
+        padding: 1.5rem 0.5rem;
+    }
+    .sidebar {
+        display: none;
+    }
+} 
