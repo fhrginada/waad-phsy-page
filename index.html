@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الاختبارات النفسية</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@700&display=swap" rel="stylesheet">
+    <style>
+      .top-header-bar {
+        width: 100vw;
+        background:#db1779 ;
+        min-height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 0 2.5vw;
+        box-sizing: border-box;
+        position: fixed;
+        top: 0;
+        right: 0;
+        left: 0;
+        z-index: 2000;
+      }
+      .header-logo {
+        display: flex;
+        align-items: center;
+        gap: 0.7em;
+        margin-right: 0;
+        margin-left: auto;
+      }
+      .header-logo img {
+        height: 40px;
+        width: auto;
+        object-fit: contain;
+        border-radius: 8px;
+        background:#db1779;
+        box-shadow: 0 1px 4px #db17793a;
+      }
+      @media (max-width: 600px) {
+        .top-header-bar {
+          min-height: 48px;
+          padding: 0 1vw;
+        }
+        .header-logo img { height: 32px; }
+      }
+      body { padding-top: 70px; background: #f4f5f8; }
+      @media (max-width: 600px) { body { padding-top: 54px; } }
+      /* + FAB button */
+      .admin-fab {
+        position: fixed;
+        left: 20px;
+        bottom: 20px;
+        z-index: 1000;
+        background: #db1779;
+        color: #fff;
+        border-radius: 50%;
+        box-shadow: 0 4px 16px #db17793a;
+        width: 48px;
+        height: 48px;
+        font-size: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: background 0.2s, box-shadow 0.2s;
+        border: none;
+        padding: 0;
+        vertical-align: middle;
+      }
+      .admin-fab:hover {
+        background: #b3145f;
+        box-shadow: 0 6px 24px #db17795a;
+      }
+      .admin-fab span {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        font-size: 2rem;
+        line-height: 0;
+        margin: 0;
+        padding: 0;
+        position: relative;
+        top: 1px;
+      }
+      @media (max-width: 600px) {
+        .admin-fab { left: 10px; bottom: 10px; width: 40px; height: 40px; font-size: 1.3rem; }
+      }
+      /* Start Test Button */
+      .start-test-btn {
+        display: block;
+        width: auto;
+        min-width: 120px;
+        padding: 0.5rem 1.5rem;
+        background-color: #db1779;
+        color: #fff;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        font-size: 1.05rem;
+        font-family: inherit;
+        font-weight: 500;
+        margin: 1.2rem auto 0 auto;
+        transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+        box-shadow: 0 2px 8px #db17791a;
+      }
+      .start-test-btn:hover {
+        background-color: #b3145f;
+        color: #fff;
+        box-shadow: 0 4px 16px #db17793a;
+      }
+      @media (max-width: 600px) {
+        .start-test-btn { min-width: 90px; font-size: 0.98rem; padding: 0.4rem 1.1rem; }
+      }
+      .hero-section {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 3rem;
+        background: #f4f5f8;
+        border-radius: 0 0 32px 32px;
+        margin-bottom: 2.5rem;
+        padding: 3rem 2rem 2.5rem 2rem;
+        box-shadow: 0 2px 12px #db17791a;
+      }
+      .hero-text {
+        flex: 1.2;
+        text-align: right;
+        font-size: 1.2rem;
+        color: #000000;
+        line-height: 2.1;
+      }
+      .hero-image-frame {
+        position: relative;
+        width: 340px;
+        height: 340px;
+        background: #db1779;
+        border-radius: 0 0 0 0;
+        margin: 0 auto;
+        box-shadow: 0 4px 24px #db17793a;
+        max-width: 370px;
+        min-width: 220px;
+        overflow: visible;
+        z-index: 1;
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-start;
+      }
+      .hero-image-inner {
+        position: absolute;
+        top: 20px;
+        right: -40px;
+        width: 300px;
+        height: 300px;
+        background: #fff;
+        border-radius: 0 0 0 0;
+        box-shadow: 0 2px 12px #0001;
+        overflow: hidden;
+        z-index: 2;
+      }
+      .hero-image-inner img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 0 0 0 0;
+        display: block;
+      }
+      @media (max-width: 900px) {
+        .hero-section { flex-direction: column; gap: 1.5rem; padding: 2rem 1rem; }
+        .hero-image-frame { width: 90vw; height: 90vw; max-width: 340px; max-height: 340px; }
+        .hero-image-inner { width: 80vw; height: 80vw; max-width: 300px; max-height: 300px; top: -7vw; right: -7vw; }
+      }
+      .section-title {
+        text-align: center;
+        margin-bottom: 2.5rem;
+        margin-top: 1.5rem;
+      }
+      .section-title h1 {
+        font-family: 'Tajawal', 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #222;
+        letter-spacing: 1px;
+        margin-bottom: 0.5rem;
+      }
+      .section-underline {
+        width: 60px;
+        height: 4px;
+        background: #db1779;
+        margin: 0 auto;
+        border-radius: 2px;
+      }
+      .hero-card-wrapper {
+        background: #ececf2; /* slightly darker than #f4f5f8 */
+        border-radius: 24px;
+        box-shadow: 0 4px 32px #db17791a;
+        padding: 2.5rem 2rem;
+        margin: 1.5rem auto 2.5rem auto;
+        max-width: 1200px;
+      }
+      @media (max-width: 900px) {
+        .hero-card-wrapper {
+          padding: 1.2rem 0.5rem;
+        }
+      }
+      .tests-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2.5rem;
+        justify-content: center;
+        margin-bottom: 2rem;
+      }
+      .test-card {
+        background: #e6e7ee; /* light gray, slightly darker than #ececf2 */
+        border-radius: 16px;
+        box-shadow: 0 2px 8px #0001;
+        overflow: hidden;
+        width: 340px;
+        min-width: 260px;
+        max-width: 100%;
+        display: flex;
+        flex-direction: column;
+        transition: box-shadow 0.2s;
+        margin-bottom: 0.5rem;
+      }
+      .test-card:hover {
+        box-shadow: 0 6px 24px #db17793a;
+      }
+      .test-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-top-left-radius: 16px;
+        border-top-right-radius: 16px;
+        background: #fff;
+      }
+      .test-card-body {
+        padding: 1.2rem 1.2rem 1.5rem 1.2rem;
+        text-align: center;
+      }
+      .test-title {
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 0.5rem;
+      }
+      .test-desc {
+        color: #444;
+        font-size: 1.05rem;
+        margin-bottom: 0.7rem;
+      }
+      @media (max-width: 900px) {
+        .tests-grid { gap: 1.2rem; }
+        .test-card { width: 95vw; min-width: 0; }
+        .test-image { height: 160px; }
+      }
+    </style>
+</head>
+<body>
+    <div class="top-header-bar">
+      <div class="header-logo">
+        <img src="img\Screenshot 2025-05-20 125810.png" alt="شعار الموقع" />
+      </div>
+    </div>
+    <div class="container">
+        <div class="hero-card-wrapper">
+            <div class="hero-section">
+                <div class="hero-text">
+                    <p style="direction: rtl; text-align: right; font-size: 18px;">
+                    مرحبًا بك في منصّة <strong>الاختبارات النفسية</strong>!<br>
+                    هنا يمكنك إجراء مجموعة من الاختبارات النفسية المصممة بعناية لمساعدتك على فهم نفسك بشكل أفضل، سواء من حيث الشخصية، أو القدرات، أو التفضيلات النفسية.<br>
+                    بعض الاختبارات مجانية، وأخرى مدفوعة لضمان جودة أعلى وتحليلات أدق.<br>
+                    اختر الاختبار الذي يناسبك، وابدأ رحلتك نحو معرفة أعمق بذاتك.
+                    </p>
+                </div>
+                <div class="hero-image-frame">
+                    <div class="hero-image-inner">
+                        <img src="img/وعد.jpg" alt="صورة ترحيبية" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="section-title">
+            <h1>الاختبارات النفسية</h1>
+            <div class="section-underline"></div>
+        </div>
+        <main class="tests-grid" id="testsContainer">
+            <!-- Tests will be dynamically loaded here -->
+        </main>
+    </div>
+    <a href="admin-login.html" class="admin-fab" title="دخول الأدمن">
+      <span>+</span>
+    </a>
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBbBGHRDene0SLHi_9-JghZSREZN_xftpc",
+            authDomain: "phys-quizzes.firebaseapp.com",
+            projectId: "phys-quizzes",
+            storageBucket: "phys-quizzes.firebasestorage.app",
+            messagingSenderId: "462871719829",
+            appId: "1:462871719829:web:2833caf94cfc5fb0b1d09c",
+            measurementId: "G-MCST1ZCND7",
+            databaseURL: "https://phys-quizzes-default-rtdb.firebaseio.com"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const analytics = getAnalytics(app);
+
+        // Function to load tests
+        async function loadTests() {
+            try {
+                const testsRef = ref(database, 'tests');
+                const snapshot = await get(testsRef);
+                const testsContainer = document.getElementById('testsContainer');
+                
+                if (!snapshot.exists()) {
+                    testsContainer.innerHTML = '<p style="text-align: center; width: 100%;">لا توجد اختبارات متاحة حالياً</p>';
+                    return;
+                }
+
+                const tests = [];
+                snapshot.forEach((childSnapshot) => {
+                    tests.push({
+                        id: childSnapshot.key,
+                        ...childSnapshot.val()
+                    });
+                });
+
+                // Sort tests by creation date
+                tests.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+                testsContainer.innerHTML = tests.map(test => `
+                    <div class="test-card">
+                        <img src="${test.image || 'img/default-test.jpg'}" alt="${test.title}" class="test-image">
+                        <div class="test-card-body">
+                            <h3 class="test-title">${test.title}</h3>
+                            <p class="test-desc">${test.description || ''}</p>
+                            <a href="test.html?id=${test.id}" class="start-test-btn">ابدأ الاختبار</a>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading tests:', error);
+                document.getElementById('testsContainer').innerHTML = 
+                    '<p style="text-align: center; width: 100%; color: #db1779;">حدث خطأ أثناء تحميل الاختبارات</p>';
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTests();
+        });
+    </script>
+</body>
+</html> 
