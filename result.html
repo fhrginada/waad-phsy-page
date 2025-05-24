@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نتيجة الاختبار</title>
+    <link rel="stylesheet" href="css/shared.css">
+    <!-- Add Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        /* Header Styles */
+        .top-header-bar {
+            width: 100vw;
+            background: #db1779;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 0 2.5vw;
+            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 0;
+            z-index: 2000;
+        }
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.7em;
+            margin-right: 0;
+            margin-left: auto;
+        }
+        .header-logo img {
+            height: 40px;
+            width: auto;
+            object-fit: contain;
+            border-radius: 8px;
+            background: #db1779;
+            box-shadow: 0 1px 4px #db17793a;
+        }
+
+        /* Back Button Styles */
+        .back-button {
+            background: #f7a4c6;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: 0 2px 8px #db17791a;
+            margin-right: 0.5rem;
+            margin-left: 0;
+            font-size: 1.5rem;
+        }
+        .back-button:hover {
+            background: #f08db8;
+            transform: translateX(3px);
+        }
+        .back-button::before {
+            content: "←";
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+
+        /* Result Container Styles */
+        .result-container {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px #db17791a;
+            padding: 3.5rem 3rem;
+            margin: 4rem auto;
+            width: 60vw;
+            min-width: 320px;
+            max-width: 900px;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .result-container:hover {
+            transform: scale(1.015);
+            box-shadow: 0 6px 24px #db17793a;
+        }
+        .result-message {
+            color: #db1779;
+            font-size: 1.2rem;
+            margin: 1.2rem 0 1.5rem 0;
+        }
+        .back-btn {
+            background: #f7a4c6;
+            color: #db1779;
+            border: none;
+            border-radius: 10px;
+            padding: 0.7rem 2.2rem;
+            font-size: 1.1rem;
+            margin-top: 2rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.7em;
+            box-shadow: 0 1px 4px #db17793a;
+            text-decoration: none;
+            border: 2px solid #db1779;
+        }
+        .back-btn::before {
+            content: "←";
+            font-size: 1.3rem;
+            margin-left: 0.5em;
+        }
+        .back-btn:hover {
+            background: #f08db8;
+            color: #fff;
+            transform: translateX(3px);
+        }
+        /* Responsive Styles */
+        @media (max-width: 600px) {
+            .top-header-bar {
+                min-height: 48px;
+                padding: 0 1vw;
+            }
+            .header-logo img {
+                height: 32px;
+            }
+            .back-button {
+                width: 32px;
+                height: 32px;
+                font-size: 1.1rem;
+            }
+            .result-container {
+                padding: 1.2rem 0.5rem;
+                margin: 1.2rem 0.2rem 1.2rem 0.2rem;
+            }
+            .back-btn {
+                padding: 0.5rem 1.2rem;
+                font-size: 1rem;
+            }
+        }
+        @media (max-width: 900px) {
+            .result-container {
+                width: 90vw;
+                max-width: 98vw;
+                padding: 2rem 0.5rem;
+                margin: 1rem auto;
+            }
+        }
+        body {
+            background: #f4f5f8;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            max-width: 900px;
+            margin: 80px auto 40px;
+            padding: 0 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .section-title {
+            font-family: 'Tajawal', 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #222;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+        .section-underline {
+            width: 70px;
+            height: 5px;
+            background: #db1779;
+            margin: 0 auto 1.5rem auto;
+            border-radius: 2px;
+        }
+        .center-arrow-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem auto;
+            background: #db1779;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+            box-shadow: 0 2px 8px #db17791a;
+            text-decoration: none;
+        }
+        .center-arrow-btn::before {
+            content: "←";
+            font-size: 2rem;
+            line-height: 1;
+        }
+        .center-arrow-btn:hover {
+            background: #b3145f;
+            transform: translateX(5px) scale(1.08);
+        }
+        .fixed-arrow-btn {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            z-index: 2002;
+            margin: 0;
+        }
+        @media (max-width: 600px) {
+            .fixed-arrow-btn {
+                bottom: 14px;
+                right: 14px;
+                width: 40px;
+                height: 40px;
+                font-size: 1.5rem;
+            }
+        }
+        .center-title-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="alert" class="alert" style="display:none;"></div>
+    <div class="top-header-bar">
+        <a href="index.html" class="back-button" title="العودة للرئيسية"></a>
+        <div class="header-logo">
+            <img src="img/Screenshot 2025-05-20 125810.png" alt="شعار الموقع" />
+        </div>
+    </div>
+    
+    <div class="container">
+        <header>
+            <h1 id="resultTitle">نتيجة الاختبار</h1>
+        </header>
+        
+        <main>
+            <div class="card">
+                <div id="resultContent">
+                    <!-- Result content will be dynamically loaded here -->
+                </div>
+            </div>
+        </main>
+
+        <div class="submit-container">
+            <a href="index.html" class="btn btn-block">العودة للرئيسية</a>
+        </div>
+    </div>
+
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/11.8.0/firebase-app.js"></script>
+    <!-- Firebase Analytics -->
+    <script src="https://www.gstatic.com/firebasejs/11.8.0/firebase-analytics.js"></script>
+    <!-- Firebase Realtime Database -->
+    <script src="https://www.gstatic.com/firebasejs/11.8.0/firebase-database.js"></script>
+    <!-- Firebase Config -->
+    <script src="js/firebase-config.js"></script>
+    <script>
+        // Get test ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const testId = urlParams.get('testId');
+        const resultId = urlParams.get('resultId');
+
+        // Load test results
+        async function loadTestResults() {
+            try {
+                if (resultId) {
+                    // Load specific result
+                    const result = await getResultById(resultId);
+                    if (result) {
+                        displayResult(result);
+                    } else {
+                        showAlert('لم يتم العثور على النتيجة', 'danger');
+                    }
+                } else if (testId) {
+                    // Load all results for this test
+                    const results = await getTestResults(testId);
+                    displayTestResults(results);
+                } else {
+                    showAlert('معرف الاختبار غير صالح', 'danger');
+                }
+            } catch (error) {
+                console.error('Error loading results:', error);
+                showAlert('حدث خطأ أثناء تحميل النتائج', 'danger');
+            }
+        }
+
+        // Display a single result
+        function displayResult(result) {
+            const resultContent = document.getElementById('resultContent');
+            resultContent.innerHTML = `
+                <div class="result-item">
+                    <div class="result-title">اسم المستخدم: ${result.userName}</div>
+                    <div class="result-description">الدرجة: ${result.score}</div>
+                    <div class="result-description">التاريخ: ${new Date(result.timestamp).toLocaleString('ar-SA')}</div>
+                </div>
+            `;
+        }
+
+        // Display all results for a test
+        function displayTestResults(results) {
+            const resultContent = document.getElementById('resultContent');
+            if (results.length === 0) {
+                resultContent.innerHTML = '<p>لا توجد نتائج لهذا الاختبار</p>';
+                return;
+            }
+
+            const resultsHtml = results.map(result => `
+                <div class="result-item">
+                    <div class="result-title">اسم المستخدم: ${result.userName}</div>
+                    <div class="result-description">الدرجة: ${result.score}</div>
+                    <div class="result-description">التاريخ: ${new Date(result.timestamp).toLocaleString('ar-SA')}</div>
+                </div>
+            `).join('');
+
+            resultContent.innerHTML = resultsHtml;
+        }
+
+        // Show alert message
+        function showAlert(message, type) {
+            const alertDiv = document.getElementById('alert');
+            alertDiv.textContent = message;
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.style.display = 'block';
+        }
+
+        // Load results when page loads
+        document.addEventListener('DOMContentLoaded', loadTestResults);
+    </script>
+</body>
+</html> 
