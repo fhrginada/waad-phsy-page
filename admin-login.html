@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: #f3f4f8;
+            font-family: 'Tajawal', 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            direction: rtl;
+            color: #222;
+        }
+        .top-header-bar {
+            width: 100vw;
+            background: #db1779;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 0 2.5vw;
+            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 0;
+            z-index: 2000;
+        }
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.7em;
+            margin-right: 0;
+            margin-left: auto;
+        }
+        .header-logo img {
+            height: 40px;
+            width: auto;
+            object-fit: contain;
+            border-radius: 8px;
+            background: #db1779;
+            box-shadow: 0 1px 4px #db17793a;
+        }
+        @media (max-width: 600px) {
+            .top-header-bar {
+                min-height: 48px;
+                padding: 0 1vw;
+            }
+            .header-logo img { height: 32px; }
+        }
+        .return-btn {
+            position: fixed;
+            top: 80px;
+            left: 32px;
+            z-index: 2100;
+            background: #f8a7c9;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.7rem;
+            cursor: pointer;
+            box-shadow: 0 2px 8px #db17791a;
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .return-btn:hover {
+            box-shadow: 0 6px 24px #db17793a;
+            transform: translateX(-5px);
+        }
+        @media (max-width: 600px) {
+            .return-btn { top: 60px; left: 10px; width: 36px; height: 36px; font-size: 1.2rem; }
+        }
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-top: 100px;
+            box-sizing: border-box;
+        }
+        .login-box {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 32px #db17791a;
+            padding: 2.5rem 2rem 2rem 2rem;
+            max-width: 370px;
+            width: 100%;
+            min-height: 340px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .login-box:hover {
+            box-shadow: 0 8px 40px #db17793a;
+            transform: translateY(-2px) scale(1.01);
+        }
+        .login-box h2 {
+            margin-bottom: 2rem;
+            color: #db1779;
+            font-size: 2.1rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+        .form-group {
+            width: 100%;
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.7rem;
+            font-weight: 600;
+            color: #333;
+            font-size: 1.08rem;
+            align-self: flex-start;
+            text-align: left;
+        }
+        input[type="password"] {
+            width: 100%;
+            padding: 0.8rem 1.5rem 0.8rem 0.5rem;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 14px;
+            font-size: 1.1rem;
+            background: #f7f7fa;
+            transition: border 0.2s, box-shadow 0.2s;
+            outline: none;
+            direction: rtl;
+            text-align: right;
+            box-sizing: border-box;
+        }
+        input[type="password"]:focus {
+            border: 1.5px solid #db1779;
+            background: #fff;
+            box-shadow: 0 0 0 2px #db17793a;
+        }
+        input[type="password"]:hover {
+            border: 1.5px solid #b3145f;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 0.8rem 0;
+            background: #db1779;
+            color: #fff;
+            border: none;
+            border-radius: 18px;
+            font-size: 1.15rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+            box-shadow: 0 2px 8px #db17791a;
+        }
+        .login-btn:hover, .login-btn:focus {
+            background: #b3145f;
+            box-shadow: 0 4px 16px #db17793a;
+            transform: scale(1.03);
+        }
+        .error-message {
+            color: #d32f2f;
+            background: #fff0f3;
+            border-radius: 10px;
+            padding: 0.6rem 1rem;
+            margin-top: 1rem;
+            font-size: 1rem;
+            display: none;
+            text-align: center;
+        }
+        @media (max-width: 600px) {
+            .login-box {
+                padding: 1.2rem 0.7rem 1.2rem 0.7rem;
+                max-width: 98vw;
+                min-height: 0;
+            }
+            .login-box h2 {
+                font-size: 1.3rem;
+            }
+            .form-group {
+                margin-bottom: 1rem;
+            }
+            .login-btn {
+                font-size: 1rem;
+                padding: 0.7rem 0;
+            }
+        }
+        .toggle-password-eye {
+            position: absolute;
+            top: 50%;
+            left: 1.1rem;
+            right: auto;
+            transform: translateY(-50%);
+            width: 1.7em;
+            height: 1.7em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #bcbcbc;
+            cursor: pointer;
+            z-index: 2;
+            font-size: 1.25em;
+            transition: color 0.2s;
+        }
+        .toggle-password-eye:hover, .toggle-password-eye:focus {
+            color: #db1779;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-header-bar">
+        <div class="header-logo">
+            <img src="img\Screenshot 2025-05-20 125810.png" alt="شعار الموقع" />
+        </div>
+
+    </div>
+    <button class="return-btn" onclick="window.location.href='index.html'" title="العودة للرئيسية">
+        <!-- Unicode left arrow for RTL -->
+        &#8592;
+    </button>
+    <div class="login-container">
+        <form class="login-box" id="loginForm" autocomplete="off">
+            <h2>لوحة التحكم</h2>
+            <div class="form-group" style="position:relative;width:100%;">
+                <label for="password">كلمة المرور</label>
+                <input type="password" id="password" required style="padding-right:2.5rem; padding-left:0.5rem;">
+                <span id="togglePassword" class="toggle-password-eye" tabindex="0" aria-label="إظهار/إخفاء كلمة المرور"></span>
+            </div>
+            <button type="submit" class="login-btn">تسجيل الدخول</button>
+            <div class="error-message" id="errorMessage">كلمة المرور غير صحيحة</div>
+            <a href="#" id="changePasswordLink" style="display:block;text-align:right;margin-top:1.1rem;color:#db1779;font-size:1.01rem;text-decoration:underline;cursor:pointer;">تغيير كلمة المرور</a>
+        </form>
+        <form class="login-box" id="changePasswordForm" autocomplete="off" style="display:none;">
+            <h2>تغيير كلمة المرور</h2>
+            <div class="form-group" style="position:relative;width:100%;">
+                <label for="currentPassword">كلمة المرور الحالية</label>
+                <input type="password" id="currentPassword" required style="padding-right:2.5rem; padding-left:0.5rem;">
+                <span id="toggleCurrentPassword" class="toggle-password-eye" tabindex="0" aria-label="إظهار/إخفاء كلمة المرور"></span>
+            </div>
+            <div class="form-group" style="position:relative;width:100%;">
+                <label for="newPassword">كلمة المرور الجديدة</label>
+                <input type="password" id="newPassword" required style="padding-right:2.5rem; padding-left:0.5rem;">
+                <span id="toggleNewPassword" class="toggle-password-eye" tabindex="0" aria-label="إظهار/إخفاء كلمة المرور"></span>
+            </div>
+            <div class="form-group" style="position:relative;width:100%;">
+                <label for="confirmNewPassword">تأكيد كلمة المرور الجديدة</label>
+                <input type="password" id="confirmNewPassword" required style="padding-right:2.5rem; padding-left:0.5rem;">
+                <span id="toggleConfirmNewPassword" class="toggle-password-eye" tabindex="0" aria-label="إظهار/إخفاء كلمة المرور"></span>
+            </div>
+            <button type="submit" class="login-btn">حفظ كلمة المرور</button>
+            <div class="error-message" id="changePassError" style="display:none;"></div>
+            <a href="#" id="backToLoginLink" style="display:block;text-align:right;margin-top:1.1rem;color:#db1779;font-size:1.01rem;text-decoration:underline;cursor:pointer;">العودة لتسجيل الدخول</a>
+        </form>
+    </div>
+    <script>
+        // --- Password Storage Helper ---
+        function getStoredPassword() {
+            return localStorage.getItem('adminPassword') || 'admin123';
+        }
+        function setStoredPassword(newPass) {
+            localStorage.setItem('adminPassword', newPass);
+        }
+        // --- Login Logic ---
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var pass = document.getElementById('password').value;
+            var error = document.getElementById('errorMessage');
+            if (pass === getStoredPassword()) {
+                error.style.display = 'none';
+                window.location.href = 'dashboard.html';
+            } else {
+                error.style.display = 'block';
+            }
+        });
+        // --- Toggle Forms ---
+        const loginForm = document.getElementById('loginForm');
+        const changePasswordForm = document.getElementById('changePasswordForm');
+        document.getElementById('changePasswordLink').onclick = function(e) {
+            e.preventDefault();
+            loginForm.style.display = 'none';
+            changePasswordForm.style.display = 'flex';
+        };
+        document.getElementById('backToLoginLink').onclick = function(e) {
+            e.preventDefault();
+            changePasswordForm.style.display = 'none';
+            loginForm.style.display = 'flex';
+        };
+        // --- Change Password Logic ---
+        changePasswordForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const current = document.getElementById('currentPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confirm = document.getElementById('confirmNewPassword').value;
+            const error = document.getElementById('changePassError');
+            error.style.display = 'none';
+            if (current !== getStoredPassword()) {
+                error.textContent = 'كلمة المرور الحالية غير صحيحة';
+                error.style.display = 'block';
+                return;
+            }
+            if (!newPass || !confirm) {
+                error.textContent = 'يرجى إدخال كلمة المرور الجديدة وتأكيدها';
+                error.style.display = 'block';
+                return;
+            }
+            if (newPass !== confirm) {
+                error.textContent = 'كلمتا المرور الجديدتان غير متطابقتين';
+                error.style.display = 'block';
+                return;
+            }
+            if (newPass.length < 4) {
+                error.textContent = 'كلمة المرور الجديدة يجب أن تكون 4 أحرف أو أكثر';
+                error.style.display = 'block';
+                return;
+            }
+            setStoredPassword(newPass);
+            error.textContent = 'تم تغيير كلمة المرور بنجاح!';
+            error.style.display = 'block';
+            error.style.color = '#0ca678';
+            setTimeout(() => {
+                changePasswordForm.style.display = 'none';
+                loginForm.style.display = 'flex';
+                error.style.color = '#d32f2f';
+                changePasswordForm.reset();
+            }, 1200);
+        });
+        // --- Password Visibility Toggle (Reusable) ---
+        function setupPasswordToggle(inputId, toggleId) {
+            const input = document.getElementById(inputId);
+            const toggle = document.getElementById(toggleId);
+            let visible = false;
+            function setEyeIcon(visible) {
+                toggle.innerHTML = visible
+                    ? '👁️'
+                    : '👁';
+            }
+            setEyeIcon(false);
+            toggle.addEventListener('click', function() {
+                visible = !visible;
+                input.type = visible ? 'text' : 'password';
+                setEyeIcon(visible);
+            });
+            toggle.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggle.click();
+                }
+            });
+        }
+        setupPasswordToggle('password', 'togglePassword');
+        setupPasswordToggle('currentPassword', 'toggleCurrentPassword');
+        setupPasswordToggle('newPassword', 'toggleNewPassword');
+        setupPasswordToggle('confirmNewPassword', 'toggleConfirmNewPassword');
+    </script>
+    <script src="js/app.js"></script>
+</body>
+</html> 

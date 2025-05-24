@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <h2>لوحة التحكم</h2>
+            <ul>
+                <li><a href="dashboard.html" class="active">الاختبارات</a></li>
+                <li><a href="index.html">الصفحة الرئيسية</a></li>
+            </ul>
+        </aside>
+        <div class="dashboard-main">
+            <header class="dashboard-header">
+                <h1>لوحة التحكم</h1>
+                <a href="create-test.html" class="add-quiz-btn">+ إضافة اختبار جديد</a>
+            </header>
+
+            <div class="dashboard-cards">
+                <div class="dashboard-card total">
+                    <div class="card-icon">✔️</div>
+                    <div>
+                        <div class="card-title">إجمالي الاختبارات</div>
+                        <div class="card-value" id="totalQuizzes">0</div>
+                    </div>
+                </div>
+                <div class="dashboard-card free">
+                    <div class="card-icon">✔️</div>
+                    <div>
+                        <div class="card-title">الاختبارات المجانية</div>
+                        <div class="card-value" id="freeQuizzes">0</div>
+                    </div>
+                </div>
+                <div class="dashboard-card paid">
+                    <div class="card-icon">💲</div>
+                    <div>
+                        <div class="card-title">الاختبارات المدفوعة</div>
+                        <div class="card-value" id="paidQuizzes">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <section class="dashboard-table-section">
+                <h2>كل الاختبارات</h2>
+                <table class="dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>عنوان الاختبار</th>
+                            <th>عدد الأسئلة</th>
+                            <th>النوع</th>
+                            <th>إجراءات</th>
+                            <th>إيميلات المجتازين</th>
+                        </tr>
+                    </thead>
+                    <tbody id="quizzesTableBody">
+                        <!-- Rows will be rendered here -->
+                    </tbody>
+                </table>
+            </section>
+
+            <div class="dashboard-charts">
+                <div class="chart-box">
+                    <h3>عدد الاختبارات المأخوذة شهرياً</h3>
+                    <canvas id="barChart" width="300" height="180"></canvas>
+                </div>
+                <div class="chart-box">
+                    <h3>مجاني مقابل مدفوع</h3>
+                    <canvas id="donutChart" width="180" height="180"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="emailsModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:#0007;z-index:3000;align-items:center;justify-content:center;">
+        <div style="background:#fff;padding:2.2rem 1.5rem 1.5rem 1.5rem;border-radius:18px;box-shadow:0 4px 32px #db17793a;max-width:95vw;width:400px;display:flex;flex-direction:column;align-items:center;">
+            <h3 style="color:#db1779;margin-bottom:1.2rem;">إيميلات المجتازين</h3>
+            <ul id="emailsList" style="width:100%;text-align:left;direction:ltr;font-size:1.1rem;margin-bottom:1.2rem;"></ul>
+            <button onclick="document.getElementById('emailsModal').style.display='none'" style="background:#db1779;color:#fff;border:none;border-radius:8px;padding:0.7rem 2.2rem;font-size:1.1rem;font-weight:600;cursor:pointer;">إغلاق</button>
+        </div>
+    </div>
+
+    <script>
+        // Global function for showing emails modal
+        function showEmailsModal(testId) {
+            const database = window.database;
+            const ref = window.ref;
+            const query = window.query;
+            const orderByChild = window.orderByChild;
+            const equalTo = window.equalTo;
+            const get = window.get;
+
+            const resultsRef = ref(database, 'quiz-results');
+            const resultsQuery = query(resultsRef, orderByChild('testId'), equalTo(testId));
+            
+            get(resultsQuery).then(snapshot => {
+                const results = [];
+                snapshot.forEach((childSnapshot) => {
+                    results.push(childSnapshot.val());
+                });
+
+                const emails = results.map(r => r.userName).filter(Boolean);
+                
+                const emailsList = document.getElementById('emailsList');
+                emailsList.innerHTML = emails.length ? 
+                    emails.map(e => `<li>${e}</li>`).join('') : 
+                    '<li style="color:#888;">لا يوجد إيميلات بعد</li>';
+                
+                document.getElementById('emailsModal').style.display = 'flex';
+            }).catch(error => {
+                console.error('Error loading emails:', error);
+                showAlert('حدث خطأ أثناء تحميل الإيميلات', 'danger');
+            });
+        }
+    </script>
+
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue, remove, query, orderByChild, equalTo, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBbBGHRDene0SLHi_9-JghZSREZN_xftpc",
+            authDomain: "phys-quizzes.firebaseapp.com",
+            projectId: "phys-quizzes",
+            storageBucket: "phys-quizzes.firebasestorage.app",
+            messagingSenderId: "462871719829",
+            appId: "1:462871719829:web:2833caf94cfc5fb0b1d09c",
+            measurementId: "G-MCST1ZCND7",
+            databaseURL: "https://phys-quizzes-default-rtdb.firebaseio.com"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const analytics = getAnalytics(app);
+
+        // Make Firebase functions globally available
+        window.database = database;
+        window.ref = ref;
+        window.query = query;
+        window.orderByChild = orderByChild;
+        window.equalTo = equalTo;
+        window.get = get;
+
+        // Function to show alert message
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 25px;
+                border-radius: 8px;
+                z-index: 3000;
+                animation: fadeIn 0.3s ease-in-out;
+            `;
+            
+            if (type === 'success') {
+                alertDiv.style.backgroundColor = '#e6fffa';
+                alertDiv.style.color = '#0ca678';
+                alertDiv.style.border = '1px solid #0ca678';
+            } else {
+                alertDiv.style.backgroundColor = '#fff0f6';
+                alertDiv.style.color = '#db1779';
+                alertDiv.style.border = '1px solid #db1779';
+            }
+
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.style.animation = 'fadeOut 0.3s ease-in-out';
+                setTimeout(() => alertDiv.remove(), 300);
+            }, 3000);
+        }
+
+        // Function to render dashboard statistics
+        async function renderDashboardStats() {
+            try {
+                const testsRef = ref(database, 'tests');
+                const snapshot = await get(testsRef);
+                const tests = [];
+                snapshot.forEach((childSnapshot) => {
+                    tests.push({
+                        id: childSnapshot.key,
+                        ...childSnapshot.val()
+                    });
+                });
+
+                const total = tests.length;
+                const free = tests.filter(t => t.isFree).length;
+                const paid = tests.filter(t => !t.isFree).length;
+                
+                document.getElementById('totalQuizzes').textContent = total;
+                document.getElementById('freeQuizzes').textContent = free;
+                document.getElementById('paidQuizzes').textContent = paid;
+
+                return tests; // Return tests for charts
+            } catch (error) {
+                console.error('Error loading dashboard stats:', error);
+                throw error;
+            }
+        }
+
+        // Function to render quizzes table
+        async function renderQuizzesTable() {
+            try {
+                const testsRef = ref(database, 'tests');
+                const snapshot = await get(testsRef);
+                const tests = [];
+                snapshot.forEach((childSnapshot) => {
+                    tests.push({
+                        id: childSnapshot.key,
+                        ...childSnapshot.val()
+                    });
+                });
+
+                const tbody = document.getElementById('quizzesTableBody');
+                
+                if (tests.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">لا توجد اختبارات متاحة</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = tests.map(test => `
+                    <tr>
+                        <td>${test.title || 'بدون عنوان'}</td>
+                        <td>${test.questions ? test.questions.length : 0}</td>
+                        <td>${test.isFree ? 'مجاني' : 'مدفوع'}</td>
+                        <td>
+                            <a href="create-test.html?id=${test.id}" title="تعديل" class="icon-btn">✏️</a>
+                            <button onclick="window.deleteTestAndRefresh('${test.id}')" title="حذف" class="icon-btn">🗑️</button>
+                        </td>
+                        <td>
+                            <button onclick="window.showEmailsModal('${test.id}')" class="view-emails-btn">عرض الإيميلات</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading quizzes table:', error);
+                throw error;
+            }
+        }
+
+        // Function to delete test and refresh
+        window.deleteTestAndRefresh = async function(testId) {
+            if (!confirm('هل أنت متأكد من حذف هذا الاختبار؟')) {
+                return;
+            }
+
+            try {
+                await remove(ref(database, `tests/${testId}`));
+                showAlert('تم حذف الاختبار بنجاح', 'success');
+                await renderDashboardStats();
+                await renderQuizzesTable();
+                renderDonutChart();
+            } catch (error) {
+                console.error('Error deleting test:', error);
+                showAlert('حدث خطأ أثناء حذف الاختبار', 'danger');
+            }
+        };
+
+        // Simple bar chart (monthly taken quizzes, dummy data)
+        function renderBarChart() {
+            const ctx = document.getElementById('barChart').getContext('2d');
+            ctx.clearRect(0, 0, 300, 180);
+            const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس'];
+            const data = [6, 2, 7, 5, 8, 3, 4, 7]; // Dummy data
+            const max = Math.max(...data, 10);
+            const barWidth = 24;
+            data.forEach((val, i) => {
+                const x = 30 + i * 34;
+                const y = 160 - (val / max) * 120;
+                ctx.fillStyle = '#db1779';
+                ctx.fillRect(x, y, barWidth, (val / max) * 120);
+                ctx.fillStyle = '#888';
+                ctx.font = '12px Tahoma';
+                ctx.fillText(months[i], x - 4, 175);
+            });
+        }
+
+        // Simple donut chart (free vs paid)
+        async function renderDonutChart() {
+            const tests = await renderDashboardStats();
+            const free = tests.filter(t => t.isFree).length;
+            const paid = tests.filter(t => !t.isFree).length;
+            const ctx = document.getElementById('donutChart').getContext('2d');
+            ctx.clearRect(0, 0, 180, 180);
+            const total = free + paid || 1;
+            const startAngle = 0;
+            const freeAngle = (free / total) * 2 * Math.PI;
+            const paidAngle = (paid / total) * 2 * Math.PI;
+            // Free
+            ctx.beginPath();
+            ctx.arc(90, 90, 70, startAngle, startAngle + freeAngle);
+            ctx.lineWidth = 30;
+            ctx.strokeStyle = '#db1779';
+            ctx.stroke();
+            // Paid
+            ctx.beginPath();
+            ctx.arc(90, 90, 70, startAngle + freeAngle, startAngle + freeAngle + paidAngle);
+            ctx.lineWidth = 30;
+            ctx.strokeStyle = '#1ccfc9';
+            ctx.stroke();
+        }
+
+        // Initialize dashboard
+        async function initializeDashboard() {
+            try {
+                await renderDashboardStats();
+                await renderQuizzesTable();
+                renderBarChart();
+                await renderDonutChart();
+            } catch (error) {
+                console.error('Error initializing dashboard:', error);
+                showAlert('حدث خطأ أثناء تحميل لوحة التحكم', 'danger');
+            }
+        }
+
+        // Start the dashboard
+        document.addEventListener('DOMContentLoaded', initializeDashboard);
+    </script>
+</body>
+</html> 
