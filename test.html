@@ -283,7 +283,7 @@
             testRef.once('value')
                 .then(function(snapshot) {
                     const testData = snapshot.val();
-                    console.log('Test data:', testData); // Debug log
+                    console.log('Raw test data from Firebase:', JSON.stringify(testData, null, 2));
                     
                     if (!testData) {
                         testContainer.innerHTML = '<p style="text-align: center; color: #db1779;">الاختبار غير موجود</p>';
@@ -295,13 +295,21 @@
                         ...testData
                     };
 
+                    // Debug display of feedback data
+                    if (currentTest.feedback) {
+                        console.log('Feedback data structure:', JSON.stringify(currentTest.feedback, null, 2));
+                        console.log('Is feedback an array?', Array.isArray(currentTest.feedback));
+                        console.log('Feedback length:', currentTest.feedback.length);
+                    } else {
+                        console.log('No feedback data found in test');
+                    }
+
                     if (!currentTest.questions || !Array.isArray(currentTest.questions)) {
-                        console.error('Invalid questions data:', currentTest.questions); // Debug log
+                        console.error('Invalid questions data:', currentTest.questions);
                         testContainer.innerHTML = '<p style="text-align: center; color: #db1779;">لا توجد أسئلة في هذا الاختبار</p>';
                         return;
                     }
 
-                    console.log('Current test:', currentTest); // Debug log
                     renderTest();
                 })
                 .catch(function(error) {
@@ -441,7 +449,8 @@
                 score: score,
                 answers: userAnswers,
                 timestamp: Date.now(),
-                testTitle: currentTest.title // حفظ عنوان الاختبار
+                testTitle: currentTest.title, // حفظ عنوان الاختبار
+                results: currentTest.results || currentTest.feedback // حفظ شروط الرسائل مع النتيجة
             })
             .then(function() {
                 // Show results
@@ -467,31 +476,14 @@
                 console.log(`Processing question ${questionIndex}:`, question);
                 console.log(`Selected answer index: ${answerIndex}`);
 
-                // التحقق من وجود السؤال والإجابة
-                if (question) {
-                    // إذا كان هناك نقاط محددة للإجابة
-                    if (question.scores && Array.isArray(question.scores)) {
-                        console.log(`Using scores array: ${question.scores}`);
-                        totalScore += question.scores[answerIndex] || 0;
-                    }
-                    // إذا كان هناك إجابة صحيحة محددة
-                    else if (question.correctAnswer !== undefined) {
-                        console.log(`Using correctAnswer: ${question.correctAnswer}`);
-                        if (parseInt(answerIndex) === question.correctAnswer) {
-                            totalScore += question.points || 1;
-                        }
-                    }
-                    // إذا كان هناك مصفوفة إجابات صحيحة
-                    else if (question.correctAnswers && Array.isArray(question.correctAnswers)) {
-                        console.log(`Using correctAnswers array: ${question.correctAnswers}`);
-                        if (question.correctAnswers.includes(parseInt(answerIndex))) {
-                            totalScore += question.points || 1;
-                        }
-                    }
-                    // Default scoring - if no specific scoring method is defined
-                    else {
-                        console.log('Using default scoring');
-                        totalScore += 1; // Give 1 point for each answer if no specific scoring is defined
+                if (question && question.answers && Array.isArray(question.answers)) {
+                    const selectedAnswer = question.answers[answerIndex];
+                    console.log(`Selected answer:`, selectedAnswer);
+
+                    // If the answer has a score property, use it
+                    if (selectedAnswer && typeof selectedAnswer.score === 'number') {
+                        console.log(`Adding score: ${selectedAnswer.score}`);
+                        totalScore += selectedAnswer.score;
                     }
                 }
             });
@@ -500,29 +492,83 @@
             return totalScore;
         }
 
+        // Get Feedback
+        function getFeedback(score) {
+            console.log('Getting feedback for score:', score);
+            let feedbackData = currentTest.feedback || currentTest.results;
+            console.log('Current test feedback/results data:', JSON.stringify(feedbackData, null, 2));
+
+            if (!feedbackData) {
+                console.log('No feedback/results data found in test');
+                return 'شكراً لإكمال الاختبار!';
+            }
+
+            // إذا كان feedbackData نص، حاول تحويله لجيسون
+            if (typeof feedbackData === 'string') {
+                try {
+                    feedbackData = JSON.parse(feedbackData);
+                    console.log('Parsed feedback data:', feedbackData);
+                } catch (e) {
+                    console.log('Failed to parse feedback string:', e);
+                }
+            }
+
+            // إذا كان feedbackData كائن results (وليس مصفوفة)
+            if (!Array.isArray(feedbackData) && typeof feedbackData === 'object') {
+                // حوله لمصفوفة رينجات
+                feedbackData = Object.entries(feedbackData).map(([range, text]) => {
+                    const [min, max] = range.split('-').map(Number);
+                    return { min, max, text };
+                });
+            }
+
+            if (!Array.isArray(feedbackData)) {
+                console.log('Feedback is not an array:', feedbackData);
+                return 'شكراً لإكمال الاختبار!';
+            }
+
+            // Sort feedback ranges by min score
+            const sortedFeedback = [...feedbackData].sort((a, b) => a.min - b.min);
+            console.log('Sorted feedback ranges:', sortedFeedback);
+
+            for (const range of sortedFeedback) {
+                if (score >= range.min && score <= range.max) {
+                    return range.text;
+                }
+            }
+
+            return 'شكراً لإكمال الاختبار!';
+        }
+
         // Show Results
         function showResults(score) {
             emailModal.style.display = 'none';
+            const feedback = getFeedback(score);
+            console.log('Final score:', score);
+            console.log('Selected feedback:', feedback);
+            
+            // Add debug information to results
+            let debugInfo = '';
+            if (currentTest.feedback) {
+                debugInfo = `
+                    <div style="text-align: left; margin-top: 1rem; padding: 1rem; background: #f0f0f0; border-radius: 8px; font-size: 0.8rem;">
+                        <p>Debug Info:</p>
+                        <pre>${JSON.stringify(currentTest.feedback, null, 2)}</pre>
+                    </div>
+                `;
+            }
+            
             resultsContent.innerHTML = `
                 <div style="text-align: center; margin-bottom: 1rem;">
                     <h4 style="color: #db1779; margin-bottom: 0.5rem;">النتيجة النهائية</h4>
                     <div style="font-size: 2rem; font-weight: bold; color: #333;">${score}</div>
                 </div>
-                <p style="text-align: center; color: #666;">${getFeedback(score)}</p>
+                <div style="text-align: center; color: #666; margin-top: 1rem; padding: 1rem; background: #f8e1ed; border-radius: 8px;">
+                    <p style="margin: 0;">${feedback}</p>
+                </div>
+                ${debugInfo}
             `;
             resultsModal.style.display = 'flex';
-        }
-
-        // Get Feedback
-        function getFeedback(score) {
-            if (currentTest.feedback && Array.isArray(currentTest.feedback)) {
-                for (const range of currentTest.feedback) {
-                    if (score >= range.min && score <= range.max) {
-                        return range.text;
-                    }
-                }
-            }
-            return 'شكراً لإكمال الاختبار!';
         }
 
         // Initialize
