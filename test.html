@@ -350,14 +350,30 @@
                 // Add options
                 options.forEach((option, optIndex) => {
                     if (!option) {
-                        console.warn('Invalid option:', option); // Debug log
+                        console.warn('Invalid option:', option);
                         return;
                     }
+                    
+                    // معالجة الخيارات بغض النظر عن نوعها
+                    let optionText = '';
+                    if (typeof option === 'object') {
+                        if (option.text) {
+                            optionText = option.text;
+                        } else if (option.answer) {
+                            optionText = option.answer;
+                        } else {
+                            // إذا كان كائن بدون نص، نحاول تحويله إلى نص
+                            optionText = Object.values(option).join(' ');
+                        }
+                    } else {
+                        optionText = option;
+                    }
+
                     html += `
                         <li class="option-item">
                             <label class="option-label">
                                 <input type="radio" name="q${index}" value="${optIndex}" required class="option-input">
-                                <span>${option}</span>
+                                <span>${optionText}</span>
                             </label>
                         </li>
                     `;
@@ -417,13 +433,15 @@
             // Calculate score
             const score = calculateScore(userAnswers);
             
-            // Save results
-            database.ref('results').push({
+            // Save results with test data
+            database.ref('quiz-results').push({
                 testId: testId,
                 email: email,
+                userName: email, // استخدام الإيميل كاسم مستخدم
                 score: score,
                 answers: userAnswers,
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                testTitle: currentTest.title // حفظ عنوان الاختبار
             })
             .then(function() {
                 // Show results
@@ -439,13 +457,46 @@
         // Calculate Score
         function calculateScore(answers) {
             let totalScore = 0;
+            console.log('Calculating score for answers:', answers);
+            console.log('Current test questions:', currentTest.questions);
+
             Object.entries(answers).forEach(([questionKey, answerIndex]) => {
                 const questionIndex = parseInt(questionKey.replace('q', ''));
                 const question = currentTest.questions[questionIndex];
-                if (question && question.scores && question.scores[answerIndex]) {
-                    totalScore += question.scores[answerIndex];
+                
+                console.log(`Processing question ${questionIndex}:`, question);
+                console.log(`Selected answer index: ${answerIndex}`);
+
+                // التحقق من وجود السؤال والإجابة
+                if (question) {
+                    // إذا كان هناك نقاط محددة للإجابة
+                    if (question.scores && Array.isArray(question.scores)) {
+                        console.log(`Using scores array: ${question.scores}`);
+                        totalScore += question.scores[answerIndex] || 0;
+                    }
+                    // إذا كان هناك إجابة صحيحة محددة
+                    else if (question.correctAnswer !== undefined) {
+                        console.log(`Using correctAnswer: ${question.correctAnswer}`);
+                        if (parseInt(answerIndex) === question.correctAnswer) {
+                            totalScore += question.points || 1;
+                        }
+                    }
+                    // إذا كان هناك مصفوفة إجابات صحيحة
+                    else if (question.correctAnswers && Array.isArray(question.correctAnswers)) {
+                        console.log(`Using correctAnswers array: ${question.correctAnswers}`);
+                        if (question.correctAnswers.includes(parseInt(answerIndex))) {
+                            totalScore += question.points || 1;
+                        }
+                    }
+                    // Default scoring - if no specific scoring method is defined
+                    else {
+                        console.log('Using default scoring');
+                        totalScore += 1; // Give 1 point for each answer if no specific scoring is defined
+                    }
                 }
             });
+
+            console.log('Final total score:', totalScore);
             return totalScore;
         }
 

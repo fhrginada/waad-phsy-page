@@ -84,37 +84,61 @@
     </div>
 
     <script>
-        // Global function for showing emails modal
-        function showEmailsModal(testId) {
-            const database = window.database;
-            const ref = window.ref;
-            const query = window.query;
-            const orderByChild = window.orderByChild;
-            const equalTo = window.equalTo;
-            const get = window.get;
-
-            const resultsRef = ref(database, 'quiz-results');
-            const resultsQuery = query(resultsRef, orderByChild('testId'), equalTo(testId));
-            
-            get(resultsQuery).then(snapshot => {
-                const results = [];
-                snapshot.forEach((childSnapshot) => {
-                    results.push(childSnapshot.val());
-                });
-
-                const emails = results.map(r => r.userName).filter(Boolean);
+        // Function to show emails modal
+        window.showEmailsModal = async function(testId) {
+            try {
+                const resultsRef = ref(database, 'quiz-results');
+                let results = [];
                 
+                try {
+                    // First try with indexed query
+                    const resultsQuery = query(resultsRef, orderByChild('testId'), equalTo(testId));
+                    const snapshot = await get(resultsQuery);
+                    snapshot.forEach((childSnapshot) => {
+                        const result = childSnapshot.val();
+                        if (result) {
+                            results.push({
+                                email: result.email || result.userName || 'مجهول',
+                                score: result.score || 0,
+                                date: new Date(result.timestamp).toLocaleString('ar-SA')
+                            });
+                        }
+                    });
+                } catch (indexError) {
+                    console.warn('Index query failed, falling back to full data fetch:', indexError);
+                    // Fallback: fetch all results and filter in memory
+                    const snapshot = await get(resultsRef);
+                    snapshot.forEach((childSnapshot) => {
+                        const result = childSnapshot.val();
+                        if (result && result.testId === testId) {
+                            results.push({
+                                email: result.email || result.userName || 'مجهول',
+                                score: result.score || 0,
+                                date: new Date(result.timestamp).toLocaleString('ar-SA')
+                            });
+                        }
+                    });
+                }
+
                 const emailsList = document.getElementById('emailsList');
-                emailsList.innerHTML = emails.length ? 
-                    emails.map(e => `<li>${e}</li>`).join('') : 
-                    '<li style="color:#888;">لا يوجد إيميلات بعد</li>';
+                if (results.length === 0) {
+                    emailsList.innerHTML = '<li style="color:#888;">لا يوجد إيميلات بعد</li>';
+                } else {
+                    emailsList.innerHTML = results.map(r => `
+                        <li style="margin-bottom:10px;padding:8px;border-bottom:1px solid #eee;">
+                            <div>${r.email}</div>
+                            <div style="color:#666;font-size:0.9em;">الدرجة: ${r.score}</div>
+                            <div style="color:#888;font-size:0.8em;">${r.date}</div>
+                        </li>
+                    `).join('');
+                }
                 
                 document.getElementById('emailsModal').style.display = 'flex';
-            }).catch(error => {
+            } catch (error) {
                 console.error('Error loading emails:', error);
-                showAlert('حدث خطأ أثناء تحميل الإيميلات', 'danger');
-            });
-        }
+                window.showAlert('حدث خطأ أثناء تحميل الإيميلات', 'error');
+            }
+        };
     </script>
 
     <!-- Firebase App (the core Firebase SDK) -->
@@ -149,52 +173,47 @@
         window.equalTo = equalTo;
         window.get = get;
 
-        // Function to show alert message
-        function showAlert(message, type) {
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type}`;
-            alertDiv.textContent = message;
-            alertDiv.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 15px 25px;
-                border-radius: 8px;
-                z-index: 3000;
-                animation: fadeIn 0.3s ease-in-out;
-            `;
-            
-            if (type === 'success') {
-                alertDiv.style.backgroundColor = '#e6fffa';
-                alertDiv.style.color = '#0ca678';
-                alertDiv.style.border = '1px solid #0ca678';
-            } else {
-                alertDiv.style.backgroundColor = '#fff0f6';
-                alertDiv.style.color = '#db1779';
-                alertDiv.style.border = '1px solid #db1779';
-            }
+        // Helper function for showing alerts
+        window.showAlert = function(message, type = 'error') {
+            try {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert alert-${type}`;
+                alertDiv.textContent = message;
+                alertDiv.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 25px;
+                    border-radius: 8px;
+                    z-index: 3000;
+                    animation: fadeIn 0.3s ease-in-out;
+                `;
+                
+                if (type === 'success') {
+                    alertDiv.style.backgroundColor = '#e6fffa';
+                    alertDiv.style.color = '#0ca678';
+                    alertDiv.style.border = '1px solid #0ca678';
+                } else {
+                    alertDiv.style.backgroundColor = '#fff0f6';
+                    alertDiv.style.color = '#db1779';
+                    alertDiv.style.border = '1px solid #db1779';
+                }
 
-            document.body.appendChild(alertDiv);
-            
-            setTimeout(() => {
-                alertDiv.style.animation = 'fadeOut 0.3s ease-in-out';
-                setTimeout(() => alertDiv.remove(), 300);
-            }, 3000);
-        }
+                document.body.appendChild(alertDiv);
+                
+                setTimeout(() => {
+                    alertDiv.style.animation = 'fadeOut 0.3s ease-in-out';
+                    setTimeout(() => alertDiv.remove(), 300);
+                }, 3000);
+            } catch (error) {
+                // Fallback to regular alert if showAlert fails
+                alert(message);
+            }
+        };
 
         // Function to render dashboard statistics
-        async function renderDashboardStats() {
+        function renderDashboardStats(tests) {
             try {
-                const testsRef = ref(database, 'tests');
-                const snapshot = await get(testsRef);
-                const tests = [];
-                snapshot.forEach((childSnapshot) => {
-                    tests.push({
-                        id: childSnapshot.key,
-                        ...childSnapshot.val()
-                    });
-                });
-
                 const total = tests.length;
                 const free = tests.filter(t => t.isFree).length;
                 const paid = tests.filter(t => !t.isFree).length;
@@ -202,16 +221,86 @@
                 document.getElementById('totalQuizzes').textContent = total;
                 document.getElementById('freeQuizzes').textContent = free;
                 document.getElementById('paidQuizzes').textContent = paid;
-
-                return tests; // Return tests for charts
             } catch (error) {
-                console.error('Error loading dashboard stats:', error);
-                throw error;
+                console.error('Error rendering dashboard stats:', error);
+                window.showAlert('حدث خطأ في عرض الإحصائيات', 'error');
             }
         }
 
         // Function to render quizzes table
-        async function renderQuizzesTable() {
+        function renderQuizzesTable(tests) {
+            try {
+                const tableBody = document.getElementById('quizzesTableBody');
+                tableBody.innerHTML = '';
+
+                if (tests.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">لا توجد اختبارات متاحة</td></tr>';
+                    return;
+                }
+
+                tests.forEach(test => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${test.title || 'بدون عنوان'}</td>
+                        <td>${test.questions ? test.questions.length : 0}</td>
+                        <td>${test.isFree ? 'مجاني' : 'مدفوع'}</td>
+                        <td>
+                            <button onclick="window.editTest('${test.id}')" class="btn-edit">تعديل</button>
+                            <button onclick="window.deleteTest('${test.id}')" class="btn-delete">حذف</button>
+                        </td>
+                        <td>
+                            <button onclick="window.showEmailsModal('${test.id}')" class="btn-emails">عرض الإيميلات</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error rendering quizzes table:', error);
+                window.showAlert('حدث خطأ في عرض جدول الاختبارات', 'error');
+            }
+        }
+
+        // Function to edit test
+        window.editTest = async function(testId) {
+            try {
+                const testRef = ref(database, `tests/${testId}`);
+                const snapshot = await get(testRef);
+                
+                if (snapshot.exists()) {
+                    const testData = snapshot.val();
+                    // Store test data in localStorage for the edit page
+                    localStorage.setItem('editTestData', JSON.stringify({
+                        id: testId,
+                        ...testData
+                    }));
+                    // Navigate to edit page with test ID
+                    window.location.href = `create-test.html?id=${testId}`;
+                } else {
+                    window.showAlert('لم يتم العثور على الاختبار', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading test for edit:', error);
+                window.showAlert('حدث خطأ أثناء تحميل بيانات الاختبار', 'error');
+            }
+        };
+
+        // Function to delete test
+        window.deleteTest = async function(testId) {
+            if (confirm('هل أنت متأكد من حذف هذا الاختبار؟')) {
+                try {
+                    await remove(ref(database, `tests/${testId}`));
+                    window.showAlert('تم حذف الاختبار بنجاح', 'success');
+                    // Reload dashboard data
+                    await loadDashboardData();
+                } catch (error) {
+                    console.error('Error deleting test:', error);
+                    window.showAlert('حدث خطأ أثناء حذف الاختبار', 'error');
+                }
+            }
+        };
+
+        // Function to load dashboard data
+        async function loadDashboardData() {
             try {
                 const testsRef = ref(database, 'tests');
                 const snapshot = await get(testsRef);
@@ -222,111 +311,24 @@
                         ...childSnapshot.val()
                     });
                 });
-
-                const tbody = document.getElementById('quizzesTableBody');
                 
-                if (tests.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">لا توجد اختبارات متاحة</td></tr>';
-                    return;
-                }
-
-                tbody.innerHTML = tests.map(test => `
-                    <tr>
-                        <td>${test.title || 'بدون عنوان'}</td>
-                        <td>${test.questions ? test.questions.length : 0}</td>
-                        <td>${test.isFree ? 'مجاني' : 'مدفوع'}</td>
-                        <td>
-                            <a href="create-test.html?id=${test.id}" title="تعديل" class="icon-btn">✏️</a>
-                            <button onclick="window.deleteTestAndRefresh('${test.id}')" title="حذف" class="icon-btn">🗑️</button>
-                        </td>
-                        <td>
-                            <button onclick="window.showEmailsModal('${test.id}')" class="view-emails-btn">عرض الإيميلات</button>
-                        </td>
-                    </tr>
-                `).join('');
+                renderDashboardStats(tests);
+                renderQuizzesTable(tests);
             } catch (error) {
-                console.error('Error loading quizzes table:', error);
-                throw error;
+                console.error('Error loading dashboard data:', error);
+                window.showAlert('حدث خطأ في تحميل البيانات', 'error');
             }
-        }
-
-        // Function to delete test and refresh
-        window.deleteTestAndRefresh = async function(testId) {
-            if (!confirm('هل أنت متأكد من حذف هذا الاختبار؟')) {
-                return;
-            }
-
-            try {
-                await remove(ref(database, `tests/${testId}`));
-                showAlert('تم حذف الاختبار بنجاح', 'success');
-                await renderDashboardStats();
-                await renderQuizzesTable();
-                renderDonutChart();
-            } catch (error) {
-                console.error('Error deleting test:', error);
-                showAlert('حدث خطأ أثناء حذف الاختبار', 'danger');
-            }
-        };
-
-        // Simple bar chart (monthly taken quizzes, dummy data)
-        function renderBarChart() {
-            const ctx = document.getElementById('barChart').getContext('2d');
-            ctx.clearRect(0, 0, 300, 180);
-            const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس'];
-            const data = [6, 2, 7, 5, 8, 3, 4, 7]; // Dummy data
-            const max = Math.max(...data, 10);
-            const barWidth = 24;
-            data.forEach((val, i) => {
-                const x = 30 + i * 34;
-                const y = 160 - (val / max) * 120;
-                ctx.fillStyle = '#db1779';
-                ctx.fillRect(x, y, barWidth, (val / max) * 120);
-                ctx.fillStyle = '#888';
-                ctx.font = '12px Tahoma';
-                ctx.fillText(months[i], x - 4, 175);
-            });
-        }
-
-        // Simple donut chart (free vs paid)
-        async function renderDonutChart() {
-            const tests = await renderDashboardStats();
-            const free = tests.filter(t => t.isFree).length;
-            const paid = tests.filter(t => !t.isFree).length;
-            const ctx = document.getElementById('donutChart').getContext('2d');
-            ctx.clearRect(0, 0, 180, 180);
-            const total = free + paid || 1;
-            const startAngle = 0;
-            const freeAngle = (free / total) * 2 * Math.PI;
-            const paidAngle = (paid / total) * 2 * Math.PI;
-            // Free
-            ctx.beginPath();
-            ctx.arc(90, 90, 70, startAngle, startAngle + freeAngle);
-            ctx.lineWidth = 30;
-            ctx.strokeStyle = '#db1779';
-            ctx.stroke();
-            // Paid
-            ctx.beginPath();
-            ctx.arc(90, 90, 70, startAngle + freeAngle, startAngle + freeAngle + paidAngle);
-            ctx.lineWidth = 30;
-            ctx.strokeStyle = '#1ccfc9';
-            ctx.stroke();
         }
 
         // Initialize dashboard
-        async function initializeDashboard() {
+        document.addEventListener('DOMContentLoaded', async function() {
             try {
-                await renderDashboardStats();
-                await renderQuizzesTable();
-                renderBarChart();
-                await renderDonutChart();
+                await loadDashboardData();
             } catch (error) {
                 console.error('Error initializing dashboard:', error);
-                showAlert('حدث خطأ أثناء تحميل لوحة التحكم', 'danger');
+                window.showAlert('حدث خطأ في تحميل لوحة التحكم', 'error');
             }
-        }
-
-        // Start the dashboard
-        document.addEventListener('DOMContentLoaded', initializeDashboard);
+        });
     </script>
 </body>
 </html> 
