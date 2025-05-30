@@ -46,6 +46,8 @@
             width: 250px;
             height: 100vh;
             overflow-y: auto;
+            z-index: 1000;
+            transition: transform 0.3s ease;
         }
 
         .sidebar h2 {
@@ -290,14 +292,35 @@
             margin-top: auto;
         }
 
-        /* Responsive Design */
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1001;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
         @media (max-width: 992px) {
             .dashboard-container {
                 flex-direction: column;
             }
 
             .sidebar {
-                display: none;
+                display: block;
+                transform: translateX(100%);
+                right: 0;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
             }
 
             .dashboard-main {
@@ -308,6 +331,22 @@
         }
 
         @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .sidebar {
+                width: 280px;
+            }
+
+            .dashboard-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-charts {
+                grid-template-columns: 1fr;
+            }
+
             .dashboard-cards {
                 display: flex;
                 flex-direction: column;
@@ -403,6 +442,7 @@
     </style>
 </head>
 <body>
+    <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
     <div class="dashboard-container">
         <aside class="sidebar">
             <h2>لوحة التحكم</h2>
@@ -482,6 +522,29 @@
     </div>
 
     <script>
+        // Add this at the beginning of your script
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const sidebar = document.querySelector('.sidebar');
+            
+            mobileMenuBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                sidebar.classList.toggle('active');
+            });
+
+            // Close sidebar when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                    sidebar.classList.remove('active');
+                }
+            });
+
+            // Prevent sidebar clicks from closing the sidebar
+            sidebar.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        });
+
         // Function to show emails modal
         window.showEmailsModal = async function(testId) {
             try {
