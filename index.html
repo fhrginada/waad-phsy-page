@@ -435,6 +435,65 @@
                 cursor: pointer;
             }
       }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        /* Search Bar Styles */
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 2rem auto;
+            padding: 0 1rem;
+            width: 100%;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 0.8rem 1.2rem;
+            font-size: 1rem;
+            border: 2px solid var(--primary-light);
+            border-radius: 25px;
+            background: #fff;
+            color: var(--text);
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+        }
+
+        .search-bar:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 2px 12px #db17791a;
+        }
+
+        .search-bar::placeholder {
+            color: #999;
+        }
+
+        @media (max-width: 768px) {
+            .search-container {
+                padding: 0 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .search-bar {
+                padding: 0.7rem 1rem;
+                font-size: 0.95rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .search-container {
+                padding: 0 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .search-bar {
+                padding: 0.6rem 0.9rem;
+                font-size: 0.9rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -444,26 +503,13 @@
       </div>
     </div>
     <div class="container">
-        <div class="hero-card-wrapper">
-            <div class="hero-section">
-                <div class="hero-text">
-                    <p style="direction: rtl; text-align: right; font-size: 18px;">
-                    مرحبًا بك في منصّة <strong>الاختبارات النفسية</strong>!<br>
-                    هنا يمكنك إجراء مجموعة من الاختبارات النفسية المصممة بعناية لمساعدتك على فهم نفسك بشكل أفضل، سواء من حيث الشخصية، أو القدرات، أو التفضيلات النفسية.<br>
-                    بعض الاختبارات مجانية، وأخرى مدفوعة لضمان جودة أعلى وتحليلات أدق.<br>
-                    اختر الاختبار الذي يناسبك، وابدأ رحلتك نحو معرفة أعمق بذاتك.
-                    </p>
-                </div>
-                <div class="hero-image-frame">
-                    <div class="hero-image-inner">
-                        <img src="img/وعد.jpg" alt="صورة ترحيبية" />
-                    </div>
-                </div>
-            </div>
-        </div>
+        
         <div class="section-title">
             <h1>الاختبارات النفسية</h1>
             <div class="section-underline"></div>
+        </div>
+        <div class="search-container">
+            <input type="text" class="search-bar" placeholder="ابحث عن اختبار..." id="searchInput">
         </div>
         <main class="tests-grid" id="testsContainer">
             <!-- Tests will be dynamically loaded here -->
@@ -502,6 +548,7 @@
                 const testsRef = ref(database, 'tests');
                 const snapshot = await get(testsRef);
                 const testsContainer = document.getElementById('testsContainer');
+                const searchInput = document.getElementById('searchInput');
                 
                 if (!snapshot.exists()) {
                     testsContainer.innerHTML = '<p style="text-align: center; width: 100%;">لا توجد اختبارات متاحة حالياً</p>';
@@ -519,16 +566,31 @@
                 // Sort tests by creation date
                 tests.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
-                testsContainer.innerHTML = tests.map(test => `
-                    <div class="test-card">
-                        <img src="${test.image || 'img/default-test.jpg'}" alt="${test.title}" class="test-image">
-                        <div class="test-card-body">
-                            <h3 class="test-title">${test.title}</h3>
-                            <p class="test-desc">${test.description || ''}</p>
-                            <a href="test.html?id=${test.id}" class="start-test-btn">ابدأ الاختبار</a>
+                function renderTests(filteredTests) {
+                    testsContainer.innerHTML = filteredTests.map(test => `
+                        <div class="test-card">
+                            <img src="${test.image || 'img/default-test.jpg'}" alt="${test.title}" class="test-image">
+                            <div class="test-card-body">
+                                <h3 class="test-title">${test.title}</h3>
+                                <p class="test-desc">${test.description || ''}</p>
+                                <a href="test.html?id=${test.id}" class="start-test-btn">ابدأ الاختبار</a>
+                            </div>
                         </div>
-                    </div>
-                `).join('');
+                    `).join('');
+                }
+
+                // Initial render
+                renderTests(tests);
+
+                // Search functionality
+                searchInput.addEventListener('input', (e) => {
+                    const searchTerm = e.target.value.trim().toLowerCase();
+                    const filteredTests = tests.filter(test => 
+                        test.title.toLowerCase().includes(searchTerm)
+                    );
+                    renderTests(filteredTests);
+                });
+
             } catch (error) {
                 console.error('Error loading tests:', error);
                 document.getElementById('testsContainer').innerHTML = 
